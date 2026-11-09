@@ -1,0 +1,7 @@
+{{ include "app.fullname" . }} {{ include "app.imageTag" . }} deployed to namespace {{ .Release.Namespace }}.
+
+The service is ClusterIP-only. To reach it:
+
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "app.fullname" . }} 8080:{{ .Values.service.port }}
+  curl http://localhost:8080/healthz
+  curl http://localhost:8080/version

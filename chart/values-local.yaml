@@ -1,0 +1,7 @@
+# kind: image is built locally and side-loaded with `kind load docker-image`.
+image:
+  repository: app-template
+  tag: local
+  pullPolicy: Never
+env:
+  APP_ENV: local

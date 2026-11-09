@@ -1,0 +1,11 @@
+.git
+.github
+chart
+scripts
+app/tests
+**/__pycache__
+**/*.pyc
+.venv
+.pytest_cache
+Makefile
+README.md

@@ -1,0 +1,30 @@
+# PR validation. Thin caller: all logic lives in sockstabby/platform reusable workflows,
+# pinned to the floating major tag @v1 (non-breaking platform fixes arrive automatically;
+# breaking changes ship as @v2 and are opt-in). See platform/README.md "Reusable workflow versioning".
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    permissions:
+      contents: read          # build only; no push on PRs, so no packages: write
+    uses: sockstabby/platform/.github/workflows/reusable-build.yml@v1
+    with:
+      image-name: app-template
+      push: false
+
+  chart-test:
+    permissions:
+      contents: read
+    uses: sockstabby/platform/.github/workflows/reusable-chart-test.yml@v1
+    with:
+      release-name: app-template
