@@ -54,9 +54,9 @@ jobs:
 
       - name: Kubernetes permissions (expect apps=yes, elsewhere=no)
         run: |
-          set -uo pipefail
+          set +e -uo pipefail   # can-i exits 1 for "no"; compare its output instead
           check() { # expected verb resource namespace
-            got=$(kubectl auth can-i "$2" "$3" -n "$4" 2>/dev/null); got=${got:-no}
+            got=$(kubectl auth can-i "$2" "$3" -n "$4" 2>/dev/null || true); got=${got:-no}
             printf '%-4s %-7s %-12s -n %-12s (expected %s)\n' "$got" "$2" "$3" "$4" "$1"
             [ "$got" = "$1" ] || fail=1
           }
