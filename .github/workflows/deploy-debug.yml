@@ -1,0 +1,34 @@
+# Build on every push to main and deploy that image (tagged with the git SHA) to debug.
+# Thin caller: logic lives in sockstabby/platform reusable workflows @v1.
+# Needs GitHub Environment "debug" with variables AWS_ROLE_ARN and EKS_CLUSTER_NAME.
+name: deploy-debug
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      packages: write         # push to GHCR
+    uses: sockstabby/platform/.github/workflows/reusable-build.yml@v1
+    with:
+      image-name: app-template
+      image-tag: ${{ github.sha }}
+      push: true
+
+  deploy:
+    needs: build
+    permissions:
+      contents: read
+      id-token: write         # GitHub OIDC -> AWS deploy role
+    uses: sockstabby/platform/.github/workflows/reusable-deploy.yml@v1
+    with:
+      environment: debug
+      image-name: app-template
+      image-tag: ${{ github.sha }}
+      values-file: chart/values-debug.yaml
