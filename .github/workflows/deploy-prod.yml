@@ -1,0 +1,38 @@
+# On a published release: tag the image already built for the release commit with the release tag
+# (no rebuild), then deploy it to prod. The "production" GitHub Environment requires reviewer
+# approval and only accepts v* tags.
+# Thin caller: logic lives in sockstabby/platform reusable workflows @v1.
+name: deploy-prod
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    permissions:
+      contents: read
+      packages: write         # add the release tag in GHCR
+    uses: sockstabby/platform/.github/workflows/reusable-promote.yml@v1
+    with:
+      image-name: app-template
+      source-tag: ${{ github.sha }}               # commit the release tag points at
+      target-tag: ${{ github.event.release.tag_name }}
+
+  deploy:
+    needs: promote
+    permissions:
+      contents: read
+      id-token: write         # GitHub OIDC -> AWS prod deploy role
+    uses: sockstabby/platform/.github/workflows/reusable-deploy.yml@v1
+    with:
+      environment: production
+      image-name: app-template
+      image-tag: ${{ github.event.release.tag_name }}
+      values-file: chart/values-prod.yaml
